@@ -1,3 +1,4 @@
 DigitizePID_Dataset/
 *.pdf
 .venv/
+*.png
