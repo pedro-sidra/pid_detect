@@ -7,13 +7,15 @@ authors = ["Pedro Freitas <pedro.sidra@senairs.org.br>"]
 [tool.poetry.dependencies]
 python = "^3.8"
 numpy = "^1.22.3"
-opencv-python = "^4.5.5"
-opencv-contrib-python = "^4.5.5"
+opencv-python = ">4.0.0"
+opencv-contrib-python = ">4.0.0"
 matplotlib = "^3.5.1"
 ipympl = "^0.9.1"
 pandas = "^1.4.2"
 PyQt5 = "^5.15.6"
 scikit-image = "^0.19.2"
+craft-text-detector = "^0.4.2"
+pytesseract = "^0.3.9"
 
 [tool.poetry.dev-dependencies]
 black = "^22.3.0"
