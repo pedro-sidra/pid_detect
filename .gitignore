@@ -2,3 +2,4 @@ DigitizePID_Dataset/
 *.pdf
 .venv/
 *.png
+.vscode
