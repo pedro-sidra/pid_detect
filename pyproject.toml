@@ -16,6 +16,10 @@ PyQt5 = "^5.15.6"
 scikit-image = "^0.19.2"
 craft-text-detector = "^0.4.2"
 pytesseract = "^0.3.9"
+mapcalc = "^0.2.2"
+mean-average-precision = "^2021.4.26"
+mahotas = "^1.4.12"
+scikit-learn = "^1.0.2"
 
 [tool.poetry.dev-dependencies]
 black = "^22.3.0"
