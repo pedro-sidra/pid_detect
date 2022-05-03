@@ -51,7 +51,15 @@ def load_sample(image_id):
     text_boxes = np.stack(data["words"].iloc[:,1]).reshape(-1,2,2) - tr
     # Sort X and Y coords inside each rect
     text_boxes = np.sort(text_boxes.reshape(-1,2,2),axis=1)
-    data["words"][1] = list(text_boxes.reshape(-1,4))
+    text_boxes = text_boxes.reshape(-1,4)
+
+    h, w, _  = im.shape
+
+    valid_words = (text_boxes[:,0]< w) & (text_boxes[:,0]> 0)  & (text_boxes[:,1]< h) & (text_boxes[:,1]> 0) 
+    text_boxes = text_boxes[valid_words]
+    data["words"] = data["words"].loc[valid_words]
+
+    data["words"][1] = list(text_boxes)
     data["words"].columns=["name","box","code","type"]
 
     # Translate symbols
@@ -262,3 +270,62 @@ def resizeAndPad(img, size, padColor=0):
     scaled_img = cv2.copyMakeBorder(scaled_img, pad_top, pad_bot, pad_left, pad_right, borderType=cv2.BORDER_CONSTANT, value=padColor)
 
     return scaled_img
+
+
+# boxA = (Ax1,Ay1,Ax2,Ay2)
+# boxB = (Bx1,By1,Bx2,By2)
+def boxesIntersect(boxA, boxB):
+    if boxA[0] > boxB[2]:
+        return False  # boxA is right of boxB
+    if boxB[0] > boxA[2]:
+        return False  # boxA is left of boxB
+    if boxA[3] < boxB[1]:
+        return False  # boxA is above boxB
+    if boxA[1] > boxB[3]:
+        return False  # boxA is below boxB
+    return True
+
+def getIntersectionArea(boxA, boxB):
+    xA = max(boxA[0], boxB[0])
+    yA = max(boxA[1], boxB[1])
+    xB = min(boxA[2], boxB[2])
+    yB = min(boxA[3], boxB[3])
+    # intersection area
+    return (xB - xA + 1) * (yB - yA + 1)
+
+def getUnionAreas(boxA, boxB, interArea=None):
+    area_A = getArea(boxA)
+    area_B = getArea(boxB)
+    if interArea is None:
+        interArea = getIntersectionArea(boxA, boxB)
+    return area_A + area_B - interArea
+
+def getArea(box):
+    return (box[2] - box[0] + 1) * (box[3] - box[1] + 1)
+
+def iou(boxA, boxB):
+    # if boxes dont intersect
+    if not boxesIntersect(boxA, boxB):
+        return 0
+    interArea = getIntersectionArea(boxA, boxB)
+    union = getUnionAreas(boxA, boxB, interArea=interArea)
+    # intersection over union
+    iou = interArea / union
+    assert iou >= 0
+    return iou
+
+def detection_metrics(preds, gts, iou_thresh=0.5):
+
+    ious = np.zeros((len(preds), len(gts)))
+
+    for i, pred_box in enumerate(preds):
+        for j, gt_box in enumerate(gts):
+            ious[i,j]=iou(pred_box, gt_box)
+
+    TP = np.any(ious>iou_thresh, axis=1)
+    FP = ~TP
+    FN = ~np.any(ious>iou_thresh, axis=0)
+
+    recall = np.sum(TP) / (np.sum(FN) + np.sum(TP))
+    precision = np.sum(TP) / (np.sum(FP) + np.sum(TP))
+    return precision, recall
