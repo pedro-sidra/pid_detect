@@ -139,8 +139,9 @@ from craft_text_detector import (
     get_prediction,
 )
 
-refine_net = load_refinenet_model(cuda=True)
-craft_net = load_craftnet_model(cuda=True)
+USE_CUDA = False
+refine_net = load_refinenet_model(cuda=USE_CUDA)
+craft_net = load_craftnet_model(cuda=USE_CUDA)
 results = {}
 def cleanup_text(im, img_id=None):
     """
@@ -178,7 +179,7 @@ def cleanup_text(im, img_id=None):
             image=window,
             craft_net=craft_net,
             refine_net=refine_net,
-            cuda=True,
+            cuda=USE_CUDA,
             poly=False
         )
         outputs.append(prediction_result)
@@ -262,7 +263,7 @@ def resizeAndPad(img, size, padColor=0):
         pad_left, pad_right, pad_top, pad_bot = 0, 0, 0, 0
 
     # set pad color
-    if len(img.shape) is 3 and not isinstance(padColor, (list, tuple, np.ndarray)): # color image but only one color provided
+    if len(img.shape) == 3 and not isinstance(padColor, (list, tuple, np.ndarray)): # color image but only one color provided
         padColor = [padColor]*3
 
     # scale and pad
