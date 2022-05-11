@@ -213,9 +213,9 @@ def cleanup_text(im, img_id=None):
         # Detect text from crop
         try:
             text = pytesseract.image_to_string(crop, config=f"--oem 3 --psm {psm}")
-        except pytesseract.TesseractError:
+        except Exception as e:
             print("Oopsie from tesseract")
-            break
+            continue
         
         # If text detected
         if len(text)>0:
@@ -262,7 +262,7 @@ def resizeAndPad(img, size, padColor=0):
         pad_left, pad_right, pad_top, pad_bot = 0, 0, 0, 0
 
     # set pad color
-    if len(img.shape) is 3 and not isinstance(padColor, (list, tuple, np.ndarray)): # color image but only one color provided
+    if len(img.shape) == 3 and not isinstance(padColor, (list, tuple, np.ndarray)): # color image but only one color provided
         padColor = [padColor]*3
 
     # scale and pad
@@ -311,7 +311,8 @@ def iou(boxA, boxB):
     union = getUnionAreas(boxA, boxB, interArea=interArea)
     # intersection over union
     iou = interArea / union
-    assert iou >= 0
+    if not  iou >= 0:
+        return 0
     return iou
 
 def detection_metrics(preds, gts, iou_thresh=0.5):
